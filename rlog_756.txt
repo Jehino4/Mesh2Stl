@@ -1,0 +1,161 @@
+from matplotlib import pyplot as plt
+#import libASAIlens as libA
+#import scipy as sp
+import numpy as np
+from skimage.measure import marching_cubes
+from skimage.draw import ellipsoid
+from skimage.draw import polygon2mask
+#from skimage.draw import disk
+from stl import mesh
+from datetime import datetime
+
+#libA.setGyroidScale(2*np.pi/6) #Gyoid Scale Factor 
+#libA.setNumberOfThreads(15) #Set the number of threads. This should not exceed the number of logical processors
+#sphereParameters = np.array([0.95482873,0.95884274,1.01492286,1.01325091])
+#libA.setSphereParameters(sphereParameters)
+#libA.setSphereRadius(101.6)
+#libA.setDensityClamp(-1.325)
+#libA.setDensityClamp(-1.156)
+
+#max_radius = libA.sphere_radius
+#resolution = 800#400#1200
+#x = np.linspace(-max_radius, max_radius, resolution)
+#y = np.linspace(-max_radius, max_radius, resolution)
+#z = np.linspace(0, max_radius, int(resolution/2))
+#X, Y, Z = np.meshgrid(x, y, z)
+
+#print("Mesh ready")
+#print(type(X))
+#print(len(X))
+
+#print(X.T*X)
+#radii = X*X + Y*Y + Z*Z
+
+#print('radii using T = '+str(radii))
+#radii = np.sqrt(X ** 2 + Y ** 2 + Z ** 2)
+#print("radii = "+str(radii))
+
+print("Verts,fcs, cubes")
+
+def single_cylndr(diskRd,diskHt):
+    #diskRd = 8 #in
+    #diskHt = 3 #in
+    el_a = 12*diskRd#(1/12)*np.round(25.4*diskRd) #mm
+    el_h = 24*diskHt#(1/12)*np.round(25.4*diskHt) #mm
+    ebase = ellipsoid(el_a,el_a,1,levelset = True)
+    ebaseT = ellipsoid(el_a,el_a,el_h,levelset = True)
+    #ebase = disk(0,0,12,levelset=True)
+    #ebase = ebase[:,:,:]
+    print(type(ebase))
+    print(ebase.shape)
+    print(ebaseT.shape)
+    #print(ebase[:][:][0])
+    edoub = np.concatenate((ebase[:,:,:],ebase[:,:,:]),axis=2)
+    
+    return([ebase,ebaseT])
+
+
+#print(type(edoub))
+#print(np.shape(edoub))
+#vertC,facC,_,__ = marching_cubes(edoub,0)
+
+
+#print("mesh zeros")
+#meshC = mesh.Mesh(np.zeros(facC.shape[0],dtype = mesh.Mesh.dtype))
+#print("mesh vectrs")
+#for i, f in enumerate(facC):
+#    for j in range(3):
+#        meshC.vectors[i][j] = vertC[f[j],:]
+#fout = str(datetime.now()).replace('.','_').replace(':','_').replace(' ','_').replace('-','_')+'.stl'
+#meshC.save('elip'+fout)
+#print("stl out")
+
+#npt = 25
+#r_c = [np.random.rand()*5 for i in range(0,npt)]
+#th_c = [np.random.rand()*2*np.pi for i in range(0,npt)]
+#z_c = [i for i in np.linspace(0,5,npt)]
+
+def single_cylnd_shape(ebase,ebaseT):
+
+   stc = []
+
+   x_p = ebase.shape[0]#27#15*3
+   y_p = ebase.shape[1]#27#15*3
+   z_p = ebaseT.shape[2]#51#27*5
+
+
+   stc3 = np.zeros((x_p,y_p,z_p))
+   print(np.shape(stc3))
+   #print(stc3[:,:,axis=0])
+
+   #print(r_c,th_c,z_c)
+   #for i,_ in enumerate(r_c):
+   #    stc.append([_,th_c[i]])
+
+    #print(stc)
+    #print(stc3[:,:,1])
+
+    #print(stc3[0,0,50])
+   for k in range(0,np.shape(stc3)[-1]):
+       for i in range(0,np.shape(stc3)[0]):
+           for j in range(0,np.shape(stc3)[1]):
+               stc3[i][j][k] = ebase[i][j][ebase.shape[2]-3]#[np.random.randint(0,ebase.shape[2])]
+                #ebase[np.random.randint(1,15)][np.random.randint(1,15)][np.random.randint(1,15)]#np.round(np.random.rand())#np.random.rand()*2*np.pi
+
+   print(stc3[:][:][1])
+
+   return(stc3)
+
+    #print(stc3[:,:,1])
+    #print(type(stc3))
+    
+def single_cylnd_stl(stc3):
+
+
+    print("mesh cy")
+
+
+    vertC,facC,_,__ = marching_cubes(stc3,0)
+    print('ve')
+
+    meshC = mesh.Mesh(np.zeros(facC.shape[0],dtype = mesh.Mesh.dtype))
+    print("mesh vectrs")
+    for i, f in enumerate(facC):
+        for j in range(3):
+            meshC.vectors[i][j] = vertC[f[j],:]
+    fout = str(datetime.now()).replace('.','_').replace(':','_').replace(' ','_').replace('-','_')+'.stl'
+    meshC.save('elip'+fout)
+    print("stl out")
+    return(0)
+
+image_shape = (10,10)
+poly_ = np.array([[1,1],[2,7],[8,4]])
+#np.concatenate((ebase[:,:,:],ebase[:,:,:]),axis=2)
+mask = polygon2mask(image_shape,poly_)
+mask = np.concatenate((mask[:,:],mask[:,:]),axis=1)
+
+
+
+[ebase,ebaseT] = single_cylndr(8,3)
+#single_cylnd_stl(single_cylnd_shape(ebase,ebaseT))
+single_cylnd_stl(single_cylnd_shape(mask,mask))
+
+
+#print(theta_c)
+#fig1 = plt.figure(1)
+#plt.plot3d([np.random.rand()*5 for i in range(0,25)],[np.random.rand()*2*np.pi for i in range(0,25)],np.linspace(0,5,25))
+#ax1 = fig1.add_subplot(111,projection='3d')
+#ax1.plot(r_c,th_c,z_c)
+#plt.plot(r_c,th_c,z_c)
+#plt.show()
+#phi_c = np.arctan(
+#print(type(ax1))
+
+
+
+
+
+Verts,fcs, cubes
+<class 'numpy.ndarray'>
+(195, 195, 5)
+(195, 195, 147)
